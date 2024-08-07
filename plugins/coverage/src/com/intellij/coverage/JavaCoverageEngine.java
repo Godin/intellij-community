@@ -60,6 +60,7 @@ import com.intellij.task.impl.ProjectTaskManagerImpl;
 import com.intellij.testIntegration.TestFramework;
 import com.intellij.util.containers.ContainerUtil;
 import jetbrains.coverage.report.ReportGenerationFailedException;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -171,7 +172,7 @@ public class JavaCoverageEngine extends CoverageEngine {
     for (int i = 0; i < traceSize; i++) {
       final String className = in.readUTF();
       final int linesSize = in.readInt();
-      for(int l = 0; l < linesSize; l++) {
+      for (int l = 0; l < linesSize; l++) {
         final int line = in.readInt();
         if (Comparing.strEqual(className, classFQName)) {
           if (lineNumber == line) {
@@ -219,7 +220,7 @@ public class JavaCoverageEngine extends CoverageEngine {
             final String className = in.readUTF();
             final int linesSize = in.readInt();
             final Set<Integer> lines = executionTrace.computeIfAbsent(className, k -> new HashSet<>());
-            for(int l = 0; l < linesSize; l++) {
+            for (int l = 0; l < linesSize; l++) {
               lines.add(in.readInt());
             }
           }
@@ -331,9 +332,11 @@ public class JavaCoverageEngine extends CoverageEngine {
     for (CoverageSuite coverageSuite : suite.getSuites()) {
       final JavaCoverageSuite javaSuite = (JavaCoverageSuite)coverageSuite;
 
-      if (psiFile instanceof PsiClassOwner && javaSuite.isPackageFiltered(ReadAction.compute(() -> ((PsiClassOwner)psiFile).getPackageName()))) {
+      if (psiFile instanceof PsiClassOwner &&
+          javaSuite.isPackageFiltered(ReadAction.compute(() -> ((PsiClassOwner)psiFile).getPackageName()))) {
         return true;
-      } else {
+      }
+      else {
         final List<PsiClass> classes = javaSuite.getCurrentSuiteClasses(project);
         for (PsiClass aClass : classes) {
           final PsiFile containingFile = ReadAction.compute(aClass::getContainingFile);
@@ -534,24 +537,21 @@ public class JavaCoverageEngine extends CoverageEngine {
     if (lineData == null) {
       return CoverageBundle.message("hits.title", 0);
     }
-    // we can only rely on IJ coverage engine in order of branches
-    if (ContainerUtil.exists(bundle.getSuites(), (suite) -> !(suite.getRunner() instanceof IDEACoverageRunner))) {
-      return createDefaultHitsMessage(lineData);
-    }
 
     try {
       int lineNumber = editor.getDocument().getLineNumber(range.getStartOffset());
       for (JavaCoverageEngineExtension extension : JavaCoverageEngineExtension.EP_NAME.getExtensionList()) {
-        String report = extension.generateBriefReport(editor, psiFile, lineNumber, range.getStartOffset(), range.getEndOffset(), lineData);
+        String report = extension.generateBriefReport(bundle, editor, psiFile, lineNumber, range.getStartOffset(), range.getEndOffset(), lineData);
         if (report != null) {
           return report;
         }
       }
 
+      var configuration = CoveragePsiConfiguration.create(bundle);
       List<SwitchCoverageExpression> switches = JavaCoveragePsiUtilsKt.getSwitches(psiFile, range);
-      List<ConditionCoverageExpression> conditions = JavaCoveragePsiUtilsKt.getConditions(psiFile, range);
+      List<ConditionCoverageExpression> conditions = JavaCoveragePsiUtilsKt.getConditions(psiFile, range, configuration);
 
-      return createBriefReport(lineData, conditions, switches);
+      return createBriefReport(lineData, configuration, conditions, switches);
     }
     catch (CancellationException e) {
       throw e;
@@ -562,13 +562,19 @@ public class JavaCoverageEngine extends CoverageEngine {
     }
   }
 
+  @ApiStatus.Internal
   public static @NotNull String createBriefReport(@NotNull LineData lineData,
+                                                  CoveragePsiConfiguration configuration,
                                                   List<ConditionCoverageExpression> conditions,
                                                   List<SwitchCoverageExpression> switches) {
     StringBuilder buf = new StringBuilder();
     buf.append(CoverageBundle.message("hits.title", lineData.getHits()));
     int idx = 0;
     int hits = 0;
+
+    if (configuration.getJumpsCanBePackedIntoSwitch()) {
+      lineData = repackJumpsAndSwitches(lineData, conditions.size(), switches);
+    }
 
     if (lineData.getJumps() != null) {
       for (JumpData jumpData : lineData.getJumps()) {
@@ -601,6 +607,45 @@ public class JavaCoverageEngine extends CoverageEngine {
   }
 
   /**
+   * Jump/switch unpacking of {@link com.intellij.coverage.JaCoCoCoverageRunner#loadExecutionData}
+   */
+  private static LineData repackJumpsAndSwitches(LineData lineData, int jumpCount, List<SwitchCoverageExpression> switches) {
+    if (lineData.getSwitches() == null) return lineData;
+    int[] hits = lineData.getSwitches()[0].getHits();
+
+    LineData data = new LineData(lineData.getLineNumber(), lineData.getMethodSignature());
+    data.setStatus((byte)lineData.getStatus());
+
+    int usedHits = 0;
+    for (int i = 0; i < jumpCount; i++) {
+      if (hits.length < usedHits + 2) break;
+      JumpData jumpData = data.addJump(i);
+      jumpData.setTrueHits(hits[usedHits++]);
+      jumpData.setFalseHits(hits[usedHits++]);
+    }
+
+    for (int i = 0; i < switches.size(); i++) {
+      SwitchCoverageExpression expression = switches.get(i);
+      int cases = expression.getCasesCount();
+      if (hits.length < usedHits + cases + 1) break;
+      SwitchData switchData = data.addSwitch(i, JaCoCoCoverageRunner.createSwitchKeys(cases));
+      // Default branch comes first, see
+      // org.jacoco.core.internal.analysis.MethodAnalyzer.visitSwitchInsnWithProbes
+      switchData.setDefaultHits(hits[usedHits++]);
+      int[] switchHits = switchData.getHits();
+      for (int j = 0; j < cases; j++) {
+        switchHits[j] = hits[usedHits++];
+      }
+    }
+
+    data.fillArrays();
+    if (data.getJumps() == null && data.getSwitches() == null) {
+      return lineData;
+    }
+    return data;
+  }
+
+  /**
    * Try to remove line breaks from expression for better visibility.
    * As the resulting expression can become too long, the modification is made only for short expressions.
    */
@@ -613,10 +658,12 @@ public class JavaCoverageEngine extends CoverageEngine {
     buf.append("\n").append(indent).append(preprocessExpression(expression.getExpression()));
     boolean reverse = expression.isReversed();
     int trueHits = reverse ? jumpData.getFalseHits() : jumpData.getTrueHits();
-    buf.append("\n").append(indent).append(indent).append(PsiKeyword.TRUE).append(" ").append(CoverageBundle.message("hits.message", trueHits));
+    buf.append("\n").append(indent).append(indent).append(PsiKeyword.TRUE).append(" ")
+      .append(CoverageBundle.message("hits.message", trueHits));
 
     int falseHits = reverse ? jumpData.getTrueHits() : jumpData.getFalseHits();
-    buf.append("\n").append(indent).append(indent).append(PsiKeyword.FALSE).append(" ").append(CoverageBundle.message("hits.message", falseHits));
+    buf.append("\n").append(indent).append(indent).append(PsiKeyword.FALSE).append(" ")
+      .append(CoverageBundle.message("hits.message", falseHits));
   }
 
   private static void addSwitchDataInfo(StringBuilder buf, SwitchData switchData, SwitchCoverageExpression expression, int coverageStatus) {
@@ -640,7 +687,8 @@ public class JavaCoverageEngine extends CoverageEngine {
   private static @NotNull String createDefaultHitsMessage(@NotNull LineData lineData) {
     BranchData branchData = lineData.getBranchData();
     if (branchData == null) return CoverageBundle.message("hits.title", lineData.getHits());
-    return CoverageBundle.message("branch.coverage.message", lineData.getHits(), branchData.getCoveredBranches(), branchData.getTotalBranches());
+    return CoverageBundle.message("branch.coverage.message", lineData.getHits(), branchData.getCoveredBranches(),
+                                  branchData.getTotalBranches());
   }
 
   @Override
@@ -757,7 +805,9 @@ public class JavaCoverageEngine extends CoverageEngine {
 
   @Override
   protected boolean isGeneratedCode(Project project, String qualifiedName, Object lineData) {
-    if (JavaCoverageOptionsProvider.getInstance(project).isGeneratedConstructor(qualifiedName, ((LineData)lineData).getMethodSignature())) return true;
+    if (JavaCoverageOptionsProvider.getInstance(project).isGeneratedConstructor(qualifiedName, ((LineData)lineData).getMethodSignature())) {
+      return true;
+    }
     return super.isGeneratedCode(project, qualifiedName, lineData);
   }
 

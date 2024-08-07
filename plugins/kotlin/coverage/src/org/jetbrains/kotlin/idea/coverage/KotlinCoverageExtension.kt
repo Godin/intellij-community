@@ -3,6 +3,7 @@
 package org.jetbrains.kotlin.idea.coverage
 
 import com.intellij.coverage.CoverageDataManager
+import com.intellij.coverage.CoveragePsiConfiguration
 import com.intellij.coverage.CoverageSuitesBundle
 import com.intellij.coverage.JavaCoverageEngine
 import com.intellij.coverage.JavaCoverageEngineExtension
@@ -98,6 +99,7 @@ class KotlinCoverageExtension : JavaCoverageEngineExtension() {
     }
 
     override fun generateBriefReport(
+        suite: CoverageSuitesBundle?,
         editor: Editor?,
         file: PsiFile?,
         lineNumber: Int,
@@ -105,11 +107,12 @@ class KotlinCoverageExtension : JavaCoverageEngineExtension() {
         endOffset: Int,
         lineData: LineData?
     ): String? {
-        if (file !is KtFile || lineData == null) return super.generateBriefReport(editor, file, lineNumber, startOffset, endOffset, lineData)
+        if (file !is KtFile || lineData == null) return super.generateBriefReport(suite, editor, file, lineNumber, startOffset, endOffset, lineData)
         val range = TextRange.create(startOffset, endOffset)
-        val conditions = getConditions(file, range)
+        val configuration = CoveragePsiConfiguration.create(suite)
+        val conditions = getConditions(file, range, configuration)
         val switches = getSwitches(file, range)
-        return JavaCoverageEngine.createBriefReport(lineData, conditions, switches)
+        return JavaCoverageEngine.createBriefReport(lineData, configuration, conditions, switches)
     }
 
     override fun getModuleWithOutput(module: Module): Module? = findJvmModule(module)

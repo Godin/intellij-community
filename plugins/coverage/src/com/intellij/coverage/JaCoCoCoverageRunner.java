@@ -28,6 +28,7 @@ import com.intellij.util.ArrayUtil;
 import com.intellij.util.containers.ContainerUtil;
 import org.jacoco.agent.AgentJar;
 import org.jacoco.core.analysis.*;
+import org.jacoco.core.internal.analysis.LineImpl;
 import org.jacoco.core.tools.ExecFileLoader;
 import org.jacoco.report.DirectorySourceFileLocator;
 import org.jacoco.report.FileMultiReportOutput;
@@ -43,6 +44,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -130,15 +132,19 @@ public final class JaCoCoCoverageRunner extends JavaCoverageRunner {
           lineData.setHits(methodLineStatus == ICounter.FULLY_COVERED || methodLineStatus == ICounter.PARTLY_COVERED ? 1 : 0);
           ICounter branchCounter = methodLine.getBranchCounter();
           if (branchCounter.getTotalCount() > 0) {
-            final int[] keys = new int[branchCounter.getTotalCount()];
-            for (int key = 0; key < keys.length; key++) {
-              keys[key] = key;
-            }
+            int[] keys = createSwitchKeys(branchCounter.getTotalCount());
             final SwitchData switchData = lineData.addSwitch(0, keys);
             final int[] hits = switchData.getHits();
-            Arrays.fill(hits, 0, branchCounter.getCoveredCount(), 1);
-            switchData.setKeysAndHits(keys, hits);
+            // Not counted in the coverage view
             switchData.setDefaultHits(1);
+            if (methodLine instanceof LineImpl lineImpl) {
+              BitSet branchCoverage = lineImpl.getCoveredBranches();
+              for (int j = 0; j < branchCounter.getTotalCount(); j++) {
+                hits[j] = branchCoverage.get(j) ? 1 : 0;
+              }
+            } else {
+              Arrays.fill(hits, 0, branchCounter.getCoveredCount(), 1);
+            }
           }
 
           classData.registerMethodSignature(lineData);
@@ -148,6 +154,14 @@ public final class JaCoCoCoverageRunner extends JavaCoverageRunner {
       }
       classData.setLines(lines);
     }
+  }
+
+  static int @NotNull [] createSwitchKeys(int total) {
+    int[] keys = new int[total];
+    for (int key = 0; key < keys.length; key++) {
+      keys[key] = key;
+    }
+    return keys;
   }
 
   private static void loadReportToCoverageBuilder(@NotNull CoverageBuilder coverageBuilder,

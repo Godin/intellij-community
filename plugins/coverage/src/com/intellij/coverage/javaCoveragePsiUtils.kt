@@ -7,10 +7,29 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import com.intellij.psi.util.parentOfType
 import com.intellij.psi.util.parents
+import org.jetbrains.annotations.ApiStatus
+
+@ApiStatus.Internal
+data class CoveragePsiConfiguration(
+  val includeLastBinaryExpressionBranch: Boolean,
+  val treatNegationAsBranch: Boolean,
+  val jumpsCanBePackedIntoSwitch: Boolean,
+) {
+  companion object {
+    val IJ = CoveragePsiConfiguration(false, false, false)
+    val JACOCO = CoveragePsiConfiguration(true, true, true)
+
+    @JvmStatic
+    fun create(bundle: CoverageSuitesBundle?): CoveragePsiConfiguration {
+      if (bundle != null && bundle.suites.any { it.runner is JaCoCoCoverageRunner }) return JACOCO
+      return IJ
+    }
+  }
+}
 
 // when a case list is null, it means that the order of cases may be unstable,
 // so it is better to rely on keys from the report
-data class SwitchCoverageExpression(val expression: String, val cases: List<String>?, val hasDefault: Boolean)
+data class SwitchCoverageExpression(val expression: String, val cases: List<String>?, val casesCount: Int, val hasDefault: Boolean)
 data class ConditionCoverageExpression(val expression: String, val isReversed: Boolean)
 
 internal fun getSwitches(psiFile: PsiFile, range: TextRange): List<SwitchCoverageExpression> {
@@ -35,15 +54,16 @@ internal fun getSwitches(psiFile: PsiFile, range: TextRange): List<SwitchCoverag
   })
   return switchBlocks.mapNotNull { block ->
     val expression = block.expression?.withoutParentheses()?.text ?: return@mapNotNull null
-    val cases = extractCaseLabels(block).mapNotNull { if (it is PsiExpression) it.withoutParentheses() else it }
+    val caseLabels = extractCaseLabels(block)
+    val cases = caseLabels.mapNotNull { if (it is PsiExpression) it.withoutParentheses() else it }
       // we know for sure that switch by string works correctly in Java
-      // is we see at least one string literal, we can keep string labels
+      // if we see at least one string literal, we can keep string labels
       .takeIf { cases -> cases.any { it.children.singleOrNull()?.elementType == JavaTokenType.STRING_LITERAL } }
-    SwitchCoverageExpression(expression, cases?.map(PsiElement::getText), hasDefaultLabel(block))
+    SwitchCoverageExpression(expression, cases?.map(PsiElement::getText), caseLabels.size, hasDefaultLabel(block))
   }
 }
 
-internal fun getConditions(psiFile: PsiFile, range: TextRange): List<ConditionCoverageExpression> {
+internal fun getConditions(psiFile: PsiFile, range: TextRange, configuration: CoveragePsiConfiguration): List<ConditionCoverageExpression> {
   fun PsiElement.startsInRange() = textOffset in range
   fun PsiElement.startsNotBefore() = textOffset >= range.startOffset
 
@@ -90,10 +110,14 @@ internal fun getConditions(psiFile: PsiFile, range: TextRange): List<ConditionCo
 
     override fun visitPolyadicExpression(expression: PsiPolyadicExpression) {
       if (expression.isBoolOperator() && expression !in conditionalExpressions) {
-        val ifParent = expression.parentOfType<PsiIfStatement>()?.takeIf { it.condition == expression }
-        val operands = if (ifParent != null) expression.operands.toList()
-        // only expression in the left operator creates a branch
-        else expression.operands.take(expression.operands.size - 1)
+        val hasIfParent = expression.parentOfType<PsiIfStatement>()?.takeIf { it.condition == expression } != null
+        val operands = if (hasIfParent || configuration.includeLastBinaryExpressionBranch) {
+          expression.operands.toList()
+        }
+        else {
+          // only expression in the left operator creates a branch
+          expression.operands.take(expression.operands.size - 1)
+        }
         operands.filter(PsiElement::startsNotBefore).forEach { conditionalExpressions.add(it) }
       }
       super.visitPolyadicExpression(expression)
@@ -102,6 +126,16 @@ internal fun getConditions(psiFile: PsiFile, range: TextRange): List<ConditionCo
     override fun visitConditionalExpression(expression: PsiConditionalExpression) {
       expression.condition.takeIf(PsiElement::startsInRange)?.also { conditionalExpressions.add(it) }
       super.visitConditionalExpression(expression)
+    }
+
+    override fun visitUnaryExpression(expression: PsiUnaryExpression) {
+      if (expression.operationTokenType == JavaTokenType.EXCL && configuration.treatNegationAsBranch) {
+        val operand = expression.operand
+        if (operand != null) {
+          conditionalExpressions.add(operand)
+        }
+      }
+      super.visitUnaryExpression(expression)
     }
   })
 
@@ -146,6 +180,7 @@ private fun PsiExpression.isReversedCondition(): Boolean {
   return parent is PsiDoWhileStatement
          || parent is PsiAssertStatement
          || parent is PsiPolyadicExpression && parent.operationTokenType == JavaTokenType.OROR && parent.operands.last() !== this
+         || parent is PsiUnaryExpression && parent.operationTokenType == JavaTokenType.EXCL
 }
 
 private fun getEnclosingParent(psiFile: PsiFile, range: TextRange): PsiElement? {

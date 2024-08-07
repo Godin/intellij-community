@@ -2,6 +2,7 @@
 package org.jetbrains.kotlin.idea.coverage
 
 import com.intellij.coverage.ConditionCoverageExpression
+import com.intellij.coverage.CoveragePsiConfiguration
 import com.intellij.coverage.SwitchCoverageExpression
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -25,12 +26,14 @@ internal fun getSwitches(psiFile: PsiFile, range: TextRange): List<SwitchCoverag
     })
     return expressions.mapNotNull { switchExpression ->
         val expression = switchExpression.subjectExpression?.withoutParentheses()?.text ?: return@mapNotNull null
+        val hasDefault = hasDefaultLabel(switchExpression)
+        val cases = switchExpression.entries.size - if (hasDefault) 1 else 0
         // 'when string' expression has indeterminate case order in Kotlin
-        SwitchCoverageExpression(expression, null, hasDefaultLabel(switchExpression))
+        SwitchCoverageExpression(expression, null, cases, hasDefault)
     }
 }
 
-internal fun getConditions(psiFile: PsiFile, range: TextRange): List<ConditionCoverageExpression> {
+internal fun getConditions(psiFile: PsiFile, range: TextRange, configuration: CoveragePsiConfiguration): List<ConditionCoverageExpression> {
     fun PsiElement.intersectsWithRange() = textRange.intersects(range)
     fun PsiElement.endsInRange() = textRange.endOffset - 1 in range
 
@@ -69,12 +72,23 @@ internal fun getConditions(psiFile: PsiFile, range: TextRange): List<ConditionCo
         override fun visitBinaryExpression(expression: KtBinaryExpression) {
             if (expression !in expressions) {
                 if (expression.isBoolOperator()) {
-                    expression.left?.also { expressions.add(it) }
+                    val expressionToAdd = if (configuration.includeLastBinaryExpressionBranch)
+                        expression else expression.left
+                    if (expressionToAdd != null) {
+                        expressions.add(expressionToAdd)
+                    }
                 } else if (expression.operationToken == KtTokens.ELVIS) {
                     expressions.add(expression)
                 }
             }
             super.visitBinaryExpression(expression)
+        }
+
+        override fun visitUnaryExpression(expression: KtUnaryExpression) {
+            if (expression.operationToken == KtTokens.EXCL && configuration.treatNegationAsBranch) {
+                expression.baseExpression?.also { expressions.add(it) }
+            }
+            super.visitUnaryExpression(expression)
         }
 
         override fun visitSafeQualifiedExpression(expression: KtSafeQualifiedExpression) {
@@ -134,6 +148,8 @@ private fun KtExpression.isReversedCondition(): Boolean {
     // This works only for non-primitive classes
     // For primitive values the condition should not be inverted
     if (this is KtBinaryExpression && operationToken == KtTokens.ELVIS) return true
+    val parentElement = parent
+    if (parentElement is KtUnaryExpression && parentElement.operationToken == KtTokens.EXCL) return true
     val insideDoWhile = parentOfType<KtDoWhileExpression>()?.condition?.let { it in parents(true) } == true
     return insideDoWhile || isLeftInOrExpression()
 }

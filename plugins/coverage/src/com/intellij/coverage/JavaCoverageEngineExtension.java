@@ -79,6 +79,10 @@ public abstract class JavaCoverageEngineExtension {
    * @return the text to show, or null if this extension doesn't handle this file type or doesn't have any custom text to show.
    */
   public String generateBriefReport(Editor editor, PsiFile file, int lineNumber, int startOffset, int endOffset, LineData lineData) {
+    return generateBriefReport(null, editor, file, lineNumber, startOffset, endOffset, lineData);
+  }
+
+  public String generateBriefReport(@Nullable CoverageSuitesBundle suite, Editor editor, PsiFile file, int lineNumber, int startOffset, int endOffset, LineData lineData) {
     return null;
   }
 

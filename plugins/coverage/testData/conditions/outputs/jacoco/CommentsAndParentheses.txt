@@ -2,26 +2,44 @@ Line 1 coverage: FULL
 Hits: 1
 Line 3 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a
+    true hits: 0
+    false hits: 1
 Line 7 coverage: PARTIAL
 Hits: 1
-Covered 2/4 branches
+  a
+    true hits: 1
+    false hits: 0
+  b
+    true hits: 0
+    false hits: 1
 Line 11 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a
+    true hits: 0
+    false hits: 1
 Line 15 coverage: PARTIAL
 Hits: 1
-Covered 2/4 branches
+  a
+    true hits: 1
+    false hits: 0
+  b
+    true hits: 0
+    false hits: 1
 Line 19 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a
+    true hits: 1
+    false hits: 0
 Line 20 coverage: FULL
 Hits: 1
 Line 25 coverage: FULL
 Hits: 1
 Line 28 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  x
+    case 0: 1
+    default: 0
 Line 30 coverage: FULL
 Hits: 1
 Line 32 coverage: FULL
@@ -30,7 +48,9 @@ Line 34 coverage: FULL
 Hits: 1
 Line 37 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  y + /* comment */ x
+    case 0: 1
+    default: 0
 Line 39 coverage: FULL
 Hits: 1
 Line 41 coverage: FULL
@@ -39,7 +59,9 @@ Line 43 coverage: FULL
 Hits: 1
 Line 46 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  x
+    case 0: 1
+    default: 0
 Line 48 coverage: FULL
 Hits: 1
 Line 50 coverage: FULL

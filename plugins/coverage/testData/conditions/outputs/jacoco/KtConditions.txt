@@ -2,21 +2,27 @@ Line 1 coverage: FULL
 Hits: 1
 Line 3 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  x == 1
+    true hits: 1
+    false hits: 0
 Line 4 coverage: FULL
 Hits: 1
 Line 9 coverage: FULL
 Hits: 1
 Line 12 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  x == 1
+    true hits: 0
+    false hits: 1
 Line 16 coverage: FULL
 Hits: 1
 Line 18 coverage: FULL
 Hits: 1
 Line 21 coverage: FULL
 Hits: 1
-Covered 2/2 branches
+  x == 1
+    true hits: 1
+    false hits: 1
 Line 22 coverage: FULL
 Hits: 1
 Line 25 coverage: FULL
@@ -25,7 +31,9 @@ Line 27 coverage: FULL
 Hits: 1
 Line 30 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  x == 1
+    true hits: 1
+    false hits: 0
 Line 31 coverage: FULL
 Hits: 1
 Line 33 coverage: FULL
@@ -34,35 +42,57 @@ Line 34 coverage: FULL
 Hits: 1
 Line 37 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  x == 1
+    true hits: 0
+    false hits: 1
 Line 40 coverage: FULL
 Hits: 1
 Line 41 coverage: FULL
 Hits: 1
 Line 53 coverage: PARTIAL
 Hits: 1
-Covered 2/4 branches
+  a
+    true hits: 1
+    false hits: 0
+  b
+    true hits: 0
+    false hits: 1
 Line 57 coverage: FULL
 Hits: 1
 Line 59 coverage: FULL
 Hits: 1
 Line 62 coverage: PARTIAL
 Hits: 1
-Covered 1/4 branches
+  a
+    true hits: 0
+    false hits: 1
+  b
+    true hits: 0
+    false hits: 0
 Line 66 coverage: FULL
 Hits: 1
 Line 68 coverage: FULL
 Hits: 1
 Line 71 coverage: PARTIAL
 Hits: 1
-Covered 2/4 branches
+  a
+    true hits: 1
+    false hits: 0
+  b
+    true hits: 1
+    false hits: 0
 Line 72 coverage: FULL
 Hits: 1
 Line 77 coverage: FULL
 Hits: 1
 Line 80 coverage: FULL
 Hits: 1
-Covered 4/4 branches
+  a
+    true hits: 1
+    false hits: 1
+  b
+    true hits: 1
+    false hits: 1
 Line 81 coverage: FULL
 Hits: 1
 Line 84 coverage: FULL
@@ -71,28 +101,48 @@ Line 86 coverage: FULL
 Hits: 1
 Line 89 coverage: PARTIAL
 Hits: 1
-Covered 1/4 branches
+  a
+    true hits: 1
+    false hits: 0
+  b
+    true hits: 0
+    false hits: 0
 Line 90 coverage: FULL
 Hits: 1
 Line 95 coverage: FULL
 Hits: 1
 Line 98 coverage: PARTIAL
 Hits: 1
-Covered 2/4 branches
+  a
+    true hits: 0
+    false hits: 1
+  b
+    true hits: 1
+    false hits: 0
 Line 99 coverage: FULL
 Hits: 1
 Line 104 coverage: FULL
 Hits: 1
 Line 107 coverage: PARTIAL
 Hits: 1
-Covered 1/4 branches
+  a
+    true hits: 1
+    false hits: 0
+  b
+    true hits: 0
+    false hits: 0
 Line 108 coverage: FULL
 Hits: 1
 Line 113 coverage: FULL
 Hits: 1
 Line 116 coverage: FULL
 Hits: 1
-Covered 4/4 branches
+  a
+    true hits: 1
+    false hits: 1
+  b
+    true hits: 1
+    false hits: 1
 Line 117 coverage: FULL
 Hits: 1
 Line 120 coverage: FULL
@@ -101,28 +151,60 @@ Line 122 coverage: FULL
 Hits: 1
 Line 125 coverage: PARTIAL
 Hits: 1
-Covered 1/6 branches
+  a
+    true hits: 0
+    false hits: 1
+  b
+    true hits: 0
+    false hits: 0
+  c
+    true hits: 0
+    false hits: 0
 Line 129 coverage: FULL
 Hits: 1
 Line 131 coverage: FULL
 Hits: 1
 Line 134 coverage: PARTIAL
 Hits: 1
-Covered 3/6 branches
+  a
+    true hits: 1
+    false hits: 1
+  b
+    true hits: 0
+    false hits: 1
+  c
+    true hits: 0
+    false hits: 0
 Line 138 coverage: FULL
 Hits: 1
 Line 140 coverage: FULL
 Hits: 1
 Line 143 coverage: PARTIAL
 Hits: 1
-Covered 5/6 branches
+  a
+    true hits: 1
+    false hits: 1
+  b
+    true hits: 1
+    false hits: 1
+  c
+    true hits: 0
+    false hits: 1
 Line 147 coverage: FULL
 Hits: 1
 Line 149 coverage: FULL
 Hits: 1
 Line 152 coverage: FULL
 Hits: 1
-Covered 6/6 branches
+  a
+    true hits: 1
+    false hits: 1
+  b
+    true hits: 1
+    false hits: 1
+  c
+    true hits: 1
+    false hits: 1
 Line 153 coverage: FULL
 Hits: 1
 Line 156 coverage: FULL
@@ -131,19 +213,35 @@ Line 158 coverage: FULL
 Hits: 1
 Line 161 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a
+    true hits: 1
+    false hits: 0
 Line 166 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a == false
+    true hits: 0
+    false hits: 1
 Line 170 coverage: PARTIAL
 Hits: 1
-Covered 2/4 branches
+  a
+    true hits: 1
+    false hits: 0
+  b
+    true hits: 0
+    false hits: 1
 Line 174 coverage: PARTIAL
 Hits: 1
-Covered 2/4 branches
+  a
+    true hits: 0
+    false hits: 1
+  b
+    true hits: 1
+    false hits: 0
 Line 178 coverage: FULL
 Hits: 1
-Covered 2/2 branches
+  0 until n
+    true hits: 1
+    false hits: 1
 Line 179 coverage: FULL
 Hits: 1
 Line 181 coverage: FULL
@@ -152,7 +250,9 @@ Line 184 coverage: FULL
 Hits: 1
 Line 186 coverage: FULL
 Hits: 1
-Covered 2/2 branches
+  elements
+    true hits: 1
+    false hits: 1
 Line 187 coverage: FULL
 Hits: 1
 Line 189 coverage: FULL
@@ -161,7 +261,9 @@ Line 192 coverage: FULL
 Hits: 1
 Line 193 coverage: FULL
 Hits: 1
-Covered 2/2 branches
+  i < n
+    true hits: 1
+    false hits: 1
 Line 194 coverage: FULL
 Hits: 1
 Line 195 coverage: FULL
@@ -170,22 +272,35 @@ Line 197 coverage: FULL
 Hits: 1
 Line 200 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a
+    true hits: 1
+    false hits: 0
 Line 204 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a
+    true hits: 0
+    false hits: 1
 Line 208 coverage: FULL
 Hits: 1
-Covered 2/2 branches
+  a
+    true hits: 1
+    false hits: 1
 Line 212 coverage: PARTIAL
 Hits: 1
-Covered 2/4 branches
+  a
+    true hits: 0
+    false hits: 1
+  b
+    true hits: 1
+    false hits: 0
 Line 216 coverage: FULL
 Hits: 1
 Line 218 coverage: FULL
 Hits: 1
 Line 219 coverage: FULL
 Hits: 1
-Covered 2/2 branches
+  i++ < n
+    true hits: 1
+    false hits: 1
 Line 220 coverage: FULL
 Hits: 1

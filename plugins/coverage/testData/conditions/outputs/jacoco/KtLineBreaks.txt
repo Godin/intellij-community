@@ -2,7 +2,10 @@ Line 1 coverage: FULL
 Hits: 1
 Line 3 coverage: PARTIAL
 Hits: 1
-Covered 1/3 branches
+  x
+    case 0: 0
+    case 1: 0
+    default: 1
 Line 4 coverage: FULL
 Hits: 1
 Line 8 coverage: FULL
@@ -11,7 +14,9 @@ Line 13 coverage: FULL
 Hits: 1
 Line 15 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  x == 1
+    true hits: 1
+    false hits: 0
 Line 17 coverage: FULL
 Hits: 1
 Line 18 coverage: FULL
@@ -20,58 +25,86 @@ Line 20 coverage: FULL
 Hits: 1
 Line 23 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a
+    true hits: 1
+    false hits: 0
 Line 24 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  b
+    true hits: 1
+    false hits: 0
 Line 25 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  c
+    true hits: 1
+    false hits: 0
 Line 26 coverage: FULL
 Hits: 1
 Line 29 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  f(a)
+    true hits: 1
+    false hits: 0
 Line 30 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  f(b)
+    true hits: 1
+    false hits: 0
 Line 31 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  f(c)
+    true hits: 1
+    false hits: 0
 Line 32 coverage: FULL
 Hits: 1
 Line 35 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a
+    true hits: 1
+    false hits: 0
 Line 36 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  b
+    true hits: 1
+    false hits: 0
 Line 37 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  c
+    true hits: 1
+    false hits: 0
 Line 41 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  f(a)
+    true hits: 1
+    false hits: 0
 Line 42 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  f(b)
+    true hits: 1
+    false hits: 0
 Line 43 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  f(c)
+    true hits: 1
+    false hits: 0
 Line 47 coverage: FULL
 Hits: 1
 Line 49 coverage: PARTIAL
 Hits: 1
 Line 51 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  0 until n
+    true hits: 1
+    false hits: 0
 Line 55 coverage: FULL
 Hits: 1
 Line 58 coverage: FULL
 Hits: 1
 Line 60 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  elements
+    true hits: 1
+    false hits: 0
 Line 64 coverage: FULL
 Hits: 1
 Line 67 coverage: FULL
@@ -80,7 +113,9 @@ Line 69 coverage: FULL
 Hits: 1
 Line 71 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  i < n
+    true hits: 0
+    false hits: 1
 Line 76 coverage: FULL
 Hits: 1
 Line 79 coverage: FULL
@@ -91,7 +126,9 @@ Line 84 coverage: FULL
 Hits: 1
 Line 86 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  i++ < n
+    true hits: 0
+    false hits: 1
 Line 88 coverage: FULL
 Hits: 1
 Line 90 coverage: FULL
@@ -100,12 +137,22 @@ Line 91 coverage: FULL
 Hits: 1
 Line 93 coverage: PARTIAL
 Hits: 1
-Covered 2/4 branches
+  a != null
+    true hits: 0
+    false hits: 1
+  a ?: b != null
+    true hits: 0
+    false hits: 1
 Line 95 coverage: FULL
 Hits: 1
 Line 97 coverage: PARTIAL
 Hits: 1
-Covered 2/4 branches
+  h(a) != null
+    true hits: 0
+    false hits: 1
+  h(a) ?: h(b) != null
+    true hits: 0
+    false hits: 1
 Line 98 coverage: FULL
 Hits: 1
 Line 99 coverage: FULL
@@ -114,20 +161,32 @@ Line 102 coverage: FULL
 Hits: 1
 Line 103 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a != null
+    true hits: 1
+    false hits: 0
 Line 104 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a ?.g() != null
+    true hits: 1
+    false hits: 0
 Line 106 coverage: FULL
 Hits: 1
 Line 107 coverage: FULL
 Hits: 1
 Line 108 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a != null
+    true hits: 1
+    false hits: 0
 Line 109 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a ?.veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongMethodName() != null
+    true hits: 1
+    false hits: 0
 Line 110 coverage: PARTIAL
 Hits: 1
-Covered 1/2 branches
+  a
+    ?.veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongMethodName()
+    ?.veryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongMethodName() != null
+    true hits: 1
+    false hits: 0
